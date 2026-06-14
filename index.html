@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mail.ru Video İndirici</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        h1 {
+            color: #0052ff;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px border #e0e0e0;
+            border-radius: 8px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        textarea:focus, input[type="text"]:focus {
+            border-color: #0052ff;
+            outline: none;
+        }
+        button {
+            width: 100%;
+            background-color: #0052ff;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #003db8;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #eef2ff;
+            display: none;
+            word-break: break-all;
+        }
+        .download-btn {
+            display: inline-block;
+            margin-top: 10px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .download-btn:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Mail.ru Video Downloader</h1>
+    <p><strong>Nasıl Kullanılır?</strong><br>
+    1. Mail.ru video sayfasına gidin.<br>
+    2. Sayfaya sağ tıklayıp <strong>"Sayfa Kaynağını Görüntüle" (Ctrl+U)</strong> deyin.<br>
+    3. Tüm kodu seçip kopyalayın ve aşağıdaki kutuya yapıştırın.</p>
+    
+    <textarea id="sourceCode" rows="8" placeholder="Sayfa kaynak kodunu buraya yapıştırın..."></textarea>
+    <button onclick="extractVideo()">Videoyu Bul</button>
+
+    <div id="resultBox" class="result">
+        <h3>Video Bulundu!</h3>
+        <p>Aşağıdaki bağlantıya sağ tıklayıp "Bağlantıyı farklı kaydet..." diyerek veya butona basarak indirebilirsiniz:</p>
+        <div id="videoLinks"></div>
+    </div>
+</div>
+
+<script>
+function extractVideo() {
+    const source = document.getElementById('sourceCode').value;
+    const resultBox = document.getElementById('resultBox');
+    const videoLinksDiv = document.getElementById('videoLinks');
+    
+    videoLinksDiv.innerHTML = '';
+    
+    // Mail.ru video url pattern'lerini yakalamak için regex (özellikle .mp4 uzantıları için)
+    const regex = /"url":"(https?:\\\/\\\/[^"]+\.mp4[^"]*)"/g;
+    let match;
+    let urls = [];
+
+    while ((match = regex.exec(source)) !== null) {
+        // JSON içindeki kaçış karakterlerini temizle (\/)
+        let cleanUrl = match[1].replace(/\\\//g, '/');
+        if (!urls.includes(cleanUrl)) {
+            urls.push(cleanUrl);
+        }
+    }
+
+    if (urls.length > 0) {
+        resultBox.style.display = 'block';
+        urls.forEach((url, index) => {
+            // Farklı kalitedeki videoları listele
+            const label = url.includes("240p") ? "240p" : 
+                          url.includes("360p") ? "360p" : 
+                          url.includes("480p") ? "480p" : 
+                          url.includes("720p") ? "720p" : 
+                          url.includes("1080p") ? "1080p" : `Video Seçeneği ${index + 1}`;
+            
+            videoLinksDiv.innerHTML += `
+                <p><strong>${label}:</strong> <br>
+                <a href="${url}" target="_blank" class="download-btn" download="video.mp4">Videoyu İndir</a></p>
+                <hr style="border:0; border-top:1px solid #ccc;">
+            `;
+        });
+    } else {
+        alert("Kaynak kodunda doğrudan video linki bulunamadı. Lütfen doğru kaynak kodunu yapıştırdığınızdan emin olun.");
+        resultBox.style.display = 'none';
+    }
+}
+</script>
+
+</body>
+</html>
